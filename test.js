@@ -82,7 +82,7 @@ app.post('/register', async (req, res) => {
         const userId = userRows[0].id;
 
         // Generate token
-        const token = jwt.sign({ id: userId }, process.env.SECRET_KEYY, { expiresIn: '7d' });
+        const token = jwt.sign({ id: userId }, '3062bbb9e93bd5d98730960abf351353e3bf6cb374339a037d5f55fb04f353175be51fbfc3593e4b38adb4d748a5040a4eb27c16a1cd6641e570eb4a01832c36', { expiresIn: '7d' });
 
         // Set cookie
         res.cookie("access_token", token, {
