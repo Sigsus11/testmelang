@@ -69,8 +69,8 @@ app.post('/register', async (req, res) => {
 
         // Insert into user_signup
         await pool.query(
-            `INSERT INTO user_signup (name, email, password, role, joined) VALUES ($1, $2, $3, $4, NOW())`,
-            [name, email, hashedPassword, role]
+            `INSERT INTO user_signup (name, email, password, role, joined) VALUES ($1, $2, $3, $4, filename, filedata, mime, size, NOW())`,
+            [name, email, hashedPassword, role, 6, 0, 0, 0]
         );
 
         // Get inserted user id
