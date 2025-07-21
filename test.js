@@ -69,7 +69,7 @@ app.post('/register', async (req, res) => {
 
         // Insert into user_signup
         await pool.query(
-            `INSERT INTO user_signup (name, email, password, role, joined) VALUES ($1, $2, $3, $4, filename, filedata, mime, size, NOW())`,
+            `INSERT INTO user_signup (name, email, password, role, filename, filedata, mime, size, joined) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())`,
             [name, email, hashedPassword, role, 6, 0, 0, 0]
         );
 
