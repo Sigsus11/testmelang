@@ -31,16 +31,75 @@ app.use(compression({
     }
 }))
 
-app.post('/register', async(req, res) => {
-    console.log(req.body);
-    const { email, role, password } = req.body;
-    res.status(200).json({
-        status: true,
-        email: email,
-        role: role,
-        password: password
-    })
-})
+app.post('/register', async (req, res) => {
+    try {
+        const { name, email, role, password } = req.body;
+
+        // Basic validations
+        if (!name || !email || !role || !password) {
+            return res.status(400).json({ message: "All fields are required." });
+        }
+
+        if (role !== "Teacher" && role !== "Student") {
+            return res.status(400).json({ message: "Student or Teacher!" });
+        }
+
+        const emailCheck = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        const nameCheck = /^[A-Za-z][A-Za-z' -]{1,49}$/;
+
+        if (!emailCheck.test(email)) {
+            return res.status(400).json({ message: "Invalid email address." });
+        }
+
+        if (!nameCheck.test(name) || name.length < 3) {
+            return res.status(400).json({ message: "Enter a valid name" });
+        }
+
+        // Check if name or email already exists
+        const { rows } = await pool.query("SELECT name, email FROM user_signup WHERE name = $1 OR email = $2", [name, email]);
+        const nameExists = rows.some(user => user.name === name);
+        const emailExists = rows.some(user => user.email === email);
+
+        if (nameExists || emailExists) {
+            return res.status(409).json({ message: "Account already exists." });
+        }
+
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Insert into user_signup
+        await pool.query(
+            `INSERT INTO user_signup (name, email, password, role, joined) VALUES ($1, $2, $3, $4, NOW())`,
+            [name, email, hashedPassword, role]
+        );
+
+        // Get inserted user id
+        const { rows: userRows } = await pool.query(
+            `SELECT id, role FROM user_signup WHERE email = $1`,
+            [email]
+        );
+
+        const userId = userRows[0].id;
+
+        // Generate token
+        const token = jwt.sign({ id: userId }, process.env.SECRET_KEYY, { expiresIn: '7d' });
+
+        // Set cookie
+        res.cookie("access_token", token, {
+            httpOnly: true,
+            secure: false, // set to true if using HTTPS
+            sameSite: "Strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
+
+        return res.status(200).json({ status: true, role: role, token: token });
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Internal Error!" });
+    }
+});
+
 
 server.listen(5001, () => {
     console.log(`Status: Running with port 5001`);
