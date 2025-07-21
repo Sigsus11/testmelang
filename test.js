@@ -33,8 +33,12 @@ app.use(compression({
 
 app.post('/register', async(req, res) => {
     console.log(req.body);
+    const { email, role, password } = req.body;
     res.status(200).json({
-        status: JSON.stringify(req.body)
+        status: true,
+        email: email,
+        role: role,
+        password: password
     })
 })
 
