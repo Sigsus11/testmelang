@@ -1,7 +1,7 @@
 {
   "name": "testmelang",
   "version": "1.0.0",
-  "main": "index.js",  // or app.js or whatever your main file is
+  "main": "index.js", 
   "scripts": {
     "start": "node test.js"
   },
